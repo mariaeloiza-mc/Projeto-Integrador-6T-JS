@@ -15,16 +15,17 @@ server.listen(port, hostname, () => {
     console.log(`Servidor rodando na porta ${port}`); //aparece no terminal
 });
 
-//TAREFA: fazer com que o texto da tela atualize sem ter que sair e entrar do servidor
-// Instalar nodemon 
-
 // Para rodar: node index.js no terminal */
 
 const express = require('express');
 const produtoRoutes = require ('./routes/produto.routes'); //para usar o que foi criado em produto routes e controller, precisa chamar ele aqui
+const sequelize = require("./config/database");
 
 const app = express();
 const port = 3000;
+
+app.use(express.json());
+app.use('/produtos', produtoRoutes);
 
 app.get('/', (req, res) => {
   res.send('Servidor rodando com sucesso!');
@@ -39,9 +40,28 @@ app.get("/produtos", (req, res) => {
     res.status(200).json(prod);
 });*/
 
-app.use('/produtos', produtoRoutes);
 
-app.listen(port, () => {
-  console.log(`Servidor iniciado em http://localhost:${port}`);
-});
- 
+async function iniciarServidor() {
+  try {
+    await sequelize.authenticate();
+    console.log("Conexão com o banco realizada com sucesso.");
+    await sequelize.sync();
+
+    app.listen(port, () => {
+      console.log(`Servidor iniciado em http://localhost:${port}`);
+    });
+  } 
+  
+  catch (error) {
+    console.error("Erro ao conectar com o banco:",
+    error);
+  }
+}
+
+/*essa parte do código serve para importar o app sem precisar abrir a prota primeiro */
+if (require.main === module) {
+  iniciarServidor();
+}
+
+module.exports = app;
+module.exports.iniciarServidor = iniciarServidor;

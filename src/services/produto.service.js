@@ -7,11 +7,11 @@
 // importa o Model
 const Produto = require("../models/produto.models");
 
-/* essa linha está comentada pois essas informações devem vir do model
+/* esse código foi comentado para iniciar com model + banco
 const produtos = [
   { id: 1, nome: "Notebook", preco: 3500 },
   { id: 2, nome: "Mouse", preco: 120 }
-]; */
+];
 
 function listar() {
   return produtos;
@@ -38,5 +38,51 @@ function criar(dados) {
   produtos.push(produto);
   return produto;
 }
+*/
 
-module.exports = { listar, buscarPorId, criar }; 
+async function listar() {
+  return await Produto.findAll();
+}
+
+async function buscarPorId(id) {
+  return await Produto.findByPk(id);
+}
+
+async function criar(dados) {
+  if (!dados || !dados.nome || dados.preco == null) {
+    throw new Error("nome e preco são obrigatórios");
+  }
+
+  return await Produto.create({
+    nome: dados.nome,
+    preco: dados.preco
+  });
+}
+
+async function atualizar(id, dados) {
+  const produto = await Produto.findByPk(id);
+  if (!produto) {
+    return null;
+  }
+  if (!dados.nome || dados.preco == null) {
+    throw new Error("nome e preco são obrigatórios");
+  }
+
+  produto.nome = dados.nome;
+  produto.preco = dados.preco;
+
+  await produto.save();
+  return produto;
+}
+
+async function excluir(id) {
+  const produto = await Produto.findByPk(id);
+  if (!produto) {
+    return false;
+  }
+
+  await produto.destroy();
+  return true;
+}
+
+module.exports = { listar, buscarPorId, criar, atualizar, excluir}; 
